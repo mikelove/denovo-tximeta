@@ -8,14 +8,15 @@ from the lab of Titus Brown.
 
 # Transcript abundance
 
-Transcript abundance was estimated with Salmon and the quantification
+Transcript abundance was estimated with *Salmon* and the quantification
 directories were collected as a single `.tar.gz` file and deposited to
-Zenodo:
+Zenodo. It is important to upload the entire *Salmon* directories and
+not just the `quant.sf` file, or else `tximeta` will not work.
 
 * https://zenodo.org/record/1486283#.W-xVBHpKiL8
 
-These were downloaded and extracted to a directory
-`Fundulus_rathbuni_salmon`, which contains 9 Salmon output
+This file was downloaded and extracted to a directory
+`Fundulus_rathbuni_salmon`, which contains 9 *Salmon* output
 directories. 
 
 # Attempting import without linking to annotation
@@ -44,3 +45,80 @@ assayNames(se)
 assays(se)[["counts"]][1:4,1:4]
 ```
 
+# Linking the quantifications to online annotations
+
+Here, we have a de novo constructed transcriptome, and so if we want
+to make the quantifications reproducible, we can formally link them to
+their sequence (FASTA file) and additional information (GFF3 file),
+which have also been deposited to Zenodo.
+
+We provide the path to the *Salmon* index for the de novo
+transcriptome, and provide links to Zenodo for the `fasta` and `gtf`
+arguments. The `jsonFile` argument is the filename for the JSON file
+that can be shared with others, linking these quantification files to
+the appropriate metadata online.
+
+We indicate that the source of the GFF3 file is the 
+[dammit](http://dib-lab.github.io/dammit/) de novo transcriptome
+annotator. This lets `tximeta` know that the *seqid* in the GFF3 file
+should be used as the names of the transcripts (often the *seqid*
+indicates the chromosome ID, but here we do not have chromosome
+information).
+
+```{r eval=FALSE}
+makeLinkedTxome(indexDir="F_rathbuni.trinity_out",
+                source="dammit",
+                organism="Fundulus rathbuni",
+                release="0",
+                genome="none",
+                fasta="https://zenodo.org/record/1486276/files/F_rathbuni.trinity_out.fasta",
+                gtf="https://zenodo.org/record/2226742/files/F_rathbuni.trinity_out.Trinity.fasta.dammit.gff3",
+                jsonFile="F_rathbuni.json")
+```
+
+```{r echo=FALSE}
+# this is just for the demo, the above code should be used instead
+makeLinkedTxome(indexDir="F_rathbuni.trinity_out",
+                source="dammit",
+                organism="Fundulus rathbuni",
+                release="0",
+                genome="none",
+                fasta="https://zenodo.org/record/1486276/files/F_rathbuni.trinity_out.fasta",
+                gtf="F_rathbuni.trinity_out.Trinity.fasta.dammit.gff3", # local only for demo
+                jsonFile="F_rathbuni.json")
+```
+
+Now we can try importing the quantifications again:
+
+```{r}
+se <- tximeta(coldata)
+```
+
+This time, `tximeta` was able to recognize the transcriptome, and to
+pull down the appropriate metadata from Zenodo. The quantifications
+are also now linked to the appropriate transcript FASTA file, enabling
+computational reproducibility of the quantification step.
+
+The warning about missing ranges from the annotation file is because
+the Bioconductor GTF/GFF importer uses `mRNA` as an indicator for
+transcripts, and not all of the transcripts in the quantification
+files have corresponding `mRNA` entries in the GFF3 file. This is an
+area for development...
+
+We can see the additional information attached to the rows of our
+quantification data:
+
+```{r}
+rowRanges(se)
+```
+
+```{r echo=FALSE}
+# remove the linked txome table for next time
+suppressPackageStartupMessages(library(BiocFileCache))
+bfc <- BiocFileCache()
+bfcremove(bfc, bfcquery(bfc, "linkedTxomeTbl")$rid)
+```
+
+```{r}
+session_info()
+```
