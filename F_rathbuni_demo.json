@@ -1,0 +1,12 @@
+[
+  {
+    "index": "F_rathbuni.trinity_out",
+    "source": "dammit",
+    "organism": "Fundulus rathbuni",
+    "release": "0",
+    "genome": "none",
+    "fasta": ["https://zenodo.org/record/1486276/files/F_rathbuni.trinity_out.fasta"],
+    "gtf": "https://zenodo.org/record/2226742/files/F_rathbuni.trinity_out.Trinity.fasta.dammit.gff3",
+    "sha256": "3816fdbde245170a7fea092107e3f6ad49aaec066760420e5fb0a7a8e748ff1b"
+  }
+]
