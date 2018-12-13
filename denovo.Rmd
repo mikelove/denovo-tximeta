@@ -1,0 +1,46 @@
+---
+title: "Use of tximeta with a denovo transcriptome"
+author: "Michael Love"
+---
+
+This is a project in collaboration with Lisa Johnson and Tessa Pierce
+from the lab of Titus Brown.
+
+# Transcript abundance
+
+Transcript abundance was estimated with Salmon and the quantification
+directories were collected as a single `.tar.gz` file and deposited to
+Zenodo:
+
+* https://zenodo.org/record/1486283#.W-xVBHpKiL8
+
+These were downloaded and extracted to a directory
+`Fundulus_rathbuni_salmon`, which contains 9 Salmon output
+directories. 
+
+# Attempting import without linking to annotation
+
+```{r}
+# install_github("mikelove/tximeta", dependencies=FALSE)
+library(tximeta)
+dir <- "Fundulus_rathbuni_salmon"
+files <- file.path(list.files(dir, full=TRUE), "quant.sf")
+all(file.exists(files))
+names <- list.files(dir)
+names <- sub(".quant","",names)
+coldata <- data.frame(files, names)
+se <- tximeta(coldata)
+```
+
+In the above code chunk, `tximeta` attempts to find a matching
+transcriptome in its database but fails, and then returns an
+"un-ranged SummarizedExperiment", meaning that we don't have any extra
+information about the transcripts. We have the rownames and multiple
+matrices of data:
+
+```{r}
+suppressPackageStartupMessages(library(SummarizedExperiment))
+assayNames(se)
+assays(se)[["counts"]][1:4,1:4]
+```
+
